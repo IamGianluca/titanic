@@ -76,7 +76,34 @@ qplot(Survived, Fare, geom="boxplot", data=data)
 
 
 ## VARIABLE 'CABIN'
+# order data by fare. Lots of observations don't report the cabin id (but are not NAs).
+# Others have multiple cabin ids or only the initial letter which should identify the
+# section. Find a way to use this data! Surely the sections at the bottom of the boat have
+# a higher mortal rate. It should be a better predictor than 'fare'. However there are lots
+# of missing values
+newdata <- data[order(data$Fare),]
+head(newdata[, c("Fare", "Cabin")], 1000)
+which(is.na(data$Cabin)==T)
+
+
 ## VARIABLE 'EMBARKED'
+# probably is a good idea exclude those cases where 'embarked' is not reported. However, 
+# people embarked in Cherbourg looks have a higher survival ratio.. which is probably
+# linked to the variable 'fare'..
+table(data$Embarked, data$Survived)
+prop.table(table(data$Embarked, data$Survived), 1)
+
+# in fact people embarked in Cherbourg paid on average a higher price compared to the rest
+# of the passengers. We used the median to evaluate it because of the presence of numerous 
+# outliers on all sub-groups (FIND A WAY TO INCLUDE MEDIAN AND VARIANCE IN A TABLE!!).
+# Keep also in mind the variance of fare paid by Cherbourg's passenger is much higher too.
+qplot(Embarked, Fare, geom="boxplot", data=data)
+fromCherbourg <- data[which(data$Embarked=="C"), ]
+median(fromCherbourg[, 10])
+fromQueenstown <- data[which(data$Embarked=="Q"), ]
+median(fromQueenstown[, 10])
+fromSouthampton <- data[which(data$Embarked=="S"), ]
+median(fromSouthampton[, 10])
 
 
 ## VARIABLE 'TICKET'
