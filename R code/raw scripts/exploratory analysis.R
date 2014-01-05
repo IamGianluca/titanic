@@ -1,19 +1,23 @@
 ##### LOAD RELEVANT LIBRARIES #####
 
 library(ggplot2)
+library(plyr)
 
 
 ##### PREPARE DATASET #####
 
 # set working directory
-setwd("~/Dropbox/Data Analysis/titanic/")
+setwd("~/Dropbox/data analysis/titanic/")
 
 # load datasets and initial data munging
 data <-read.csv("./data/raw data/train.csv")
-data$Survived <- as.factor(data$Survived)
-data$Pclass <- as.factor(data$Pclass)
-data$Name <- as.character(data$Name)
-data$Ticket <- as.integer(data$Ticket)
+data <- transform(data,
+                  Survived = factor(Survived, labels = c("No", "Yes")),
+                  Pclass = factor(Pclass, labels = c("1st", "2nd", "3rd")),
+                  Name = as.character(Name),
+                  Ticket = as.integer(Ticket),
+                  Area = substr(Cabin, 1, 1)
+                  )
 
 
 ##### EXPLORATORY ANALYSIS #####
@@ -75,15 +79,20 @@ qplot(Age, Fare, colour=Survived, data=data)
 qplot(Survived, Fare, geom="boxplot", data=data)
 
 
-## VARIABLE 'CABIN'
+## VARIABLE 'CABIN' and 'AREA'
 # order data by fare. Lots of observations don't report the cabin id (but are not NAs).
 # Others have multiple cabin ids or only the initial letter which should identify the
 # section. Find a way to use this data! Surely the sections at the bottom of the boat have
-# a higher mortal rate. It should be a better predictor than 'fare'. However there are lots
+# a higher mortal rate. It should be a better predictor than 'Fare'. However there are lots
 # of missing values
 newdata <- data[order(data$Fare),]
 head(newdata[, c("Fare", "Cabin")], 1000)
-which(is.na(data$Cabin)==T)
+
+# recoding the 'Cabin' variable extracting the 'Area' code, we can see on certain areas
+# the chances to survive were higher. It's also important to notice most of the observations
+# do not report the 'Cabin' variable.
+summary(data$Area)
+prop.table(table(data$Area, data$Survived), 1)
 
 
 ## VARIABLE 'EMBARKED'
@@ -95,15 +104,10 @@ prop.table(table(data$Embarked, data$Survived), 1)
 
 # in fact people embarked in Cherbourg paid on average a higher price compared to the rest
 # of the passengers. We used the median to evaluate it because of the presence of numerous 
-# outliers on all sub-groups (FIND A WAY TO INCLUDE MEDIAN AND VARIANCE IN A TABLE!!).
+# outliers on all sub-groups.
 # Keep also in mind the variance of fare paid by Cherbourg's passenger is much higher too.
 qplot(Embarked, Fare, geom="boxplot", data=data)
-fromCherbourg <- data[which(data$Embarked=="C"), ]
-median(fromCherbourg[, 10])
-fromQueenstown <- data[which(data$Embarked=="Q"), ]
-median(fromQueenstown[, 10])
-fromSouthampton <- data[which(data$Embarked=="S"), ]
-median(fromSouthampton[, 10])
+ddply(data, "Embarked", summarise, median=median(Fare, na.rm=T), sd=sd(Fare, na.rm=T))
 
 
 ## VARIABLE 'TICKET'
