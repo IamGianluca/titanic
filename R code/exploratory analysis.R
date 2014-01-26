@@ -146,3 +146,35 @@ ddply(trainData, "Embarked", summarise, median = median(Fare, na.rm = TRUE),
 # tickets for families, maybe?)
 summary(Ticket)
 hist(table(Ticket))
+
+
+##### DATA MANIPULATION #####
+
+# extract FormOfAddress from Name
+for (i in 1 : nrow(trainData)) {
+  if (grepl("Mr\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Mr"}
+  else if (grepl("Miss\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Miss"}
+  else if (grepl("Mrs\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Mrs"}
+  else if (grepl("Ms\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Ms"}
+  else if (grepl("Don\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Don"}
+  else if (grepl("Master\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Master"}
+  else if (grepl("Rev\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Rev"}
+  else if (grepl("Mme\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Mme"}
+  else if (grepl("Dr\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Dr"}
+  else if (grepl("Sir\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Sir"}
+  else if (grepl("Lady\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Lady"}
+  else if (grepl("Mlle\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Mlle"}
+  else if (grepl("Col\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Col"}
+  
+  # Jonkheer (female equivalent: Jonkvrouw) is a Dutch honorific of nobility. In Belgium,
+  # the title of Écuyer (in French) or Jonkheer/Jonkvrouw (in Dutch) is the lowest title
+  # within the nobility system
+  else if (grepl("Jonkheer\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Jonkheer"}
+  else if (grepl("the Countess\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Countess"}
+  else if (grepl("Major\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Major"}
+  else if (grepl("Capt\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Capt"}
+  else {vec[i] <- "Boh"}
+}
+
+trainData <- as.data.frame(cbind(trainData, vec))
+names(trainData)[length(trainData)] <- "FormOfAddress"
