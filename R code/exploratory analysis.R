@@ -12,26 +12,26 @@ setwd("~/Dropbox/data analysis/titanic/")
 trainData <-read.csv("./data/train.csv")
 
 trainData <- transform(trainData,
-                  Survived = factor(Survived, levels = c(0, 1),
-                                    labels = c("No", "Yes")),
-                  Pclass = factor(Pclass, levels = c(1, 2, 3),
-                                  labels = c("1st", "2nd", "3rd")),
-                  Name = as.character(Name),
-                  Ticket = as.integer(Ticket),
-                  Area = substr(Cabin, 1, 1)
-                  )
+                       Survived = factor(Survived, levels = c(0, 1),
+                                         labels = c("No", "Yes")),
+                       Pclass = factor(Pclass, levels = c(1, 2, 3),
+                                       labels = c("1st", "2nd", "3rd")),
+                       Name = as.character(Name),
+                       Sex = factor(Sex, levels = c("male", "female"),
+                                    labels = c("Male", "Female")),
+                       Ticket = as.integer(Ticket),
+                       Area = substr(Cabin, 1, 1)
+                       )
 
 attach(trainData)
+
 
 ##### EXPLORATORY ANALYSIS #####
 
 ## VARIABLE 'AGE'
-# it doesn't have a normal distribution, and has 177 NAs
+# Age doesn't follow a normal distribution, and has 177 NAs
 summary(Age)
-
-par(mfrow = c(1, 2))
-hist(Age, breaks=100)
-plot(density(Age, na.rm=T))
+ggplot(trainData, aes(x = Age)) + geom_density()
 
 # filtering by 'Survived' we can see both groups have approximately the same median, but 
 # the shape is different. 'Non survived' is right skewed, whereas 'Survived' is left skewed.
@@ -42,6 +42,7 @@ ggplot(trainData, aes(x = Survived, y = Age)) + geom_boxplot()
 # 3rd class represents more than half of the total population (55.11%)
 summary(Pclass)
 ggplot(trainData, aes(x=Pclass)) + geom_bar()
+
 
 # survival rate is much higher on 1st class passenger and decrease consistently among each
 # class. Surely this is an important covariate!
@@ -70,13 +71,35 @@ ggplot(trainData, aes(x = Sex, y = Age)) + geom_boxplot()
 
 
 # famales have a much higher likelihood to survive (.74 vs .19)
-sex_surv <- table(Sex, Survived)
-prop.table(sex_surv, 1)
+prop.table(table(Sex, Survived), 1)
 ggplot(trainData, aes(x = Sex, fill = Survived)) + geom_bar()
 
 
 ## VARIABLE 'SIBSP'
+# this variable reports the number of siblings/spouses aboard
+# it seems that humans with 1 or 2 siblings/spouses aboard have a higher survival ratio.
+# Also people with no siblings/spouses aboard have a decent survival rate, whereas big
+# families report bad probabilities to survive the disaster.
+# It important to note there are really few big families aboard, most people are in fact 
+# alone or with just one relative
+summary(SibSp)
+ggplot(trainData, aes(x = SibSp)) + geom_density()
+ggplot(trainData, aes(x = SibSp)) + geom_histogram()
+
+ggplot(trainData, aes(x = SibSp, fill = Survived)) + geom_bar(colour = "black")
+
+prop.table(table(SibSp, Survived), 1)
+
+
 ## VARIABLE 'PARCH'
+# this variable reports the number of parents/children aboard
+# Results are similar to those seen on the SibSp variable. Big families seems to have a 
+# higher probability not to survive the disaster. Again, members of big families are rare
+summary(Parch)
+ggplot(trainData, aes(x = Parch)) + geom_density()
+ggplot(trainData, aes(x = Parch, fill = Survived)) + geom_bar(colour = "black")
+
+prop.table(table(Parch, Survived), 1)
 
 
 ## VARIABLE 'FARE'
@@ -113,13 +136,13 @@ prop.table(table(Embarked, Survived), 1)
 # outliers on all sub-groups.
 # Keep also in mind the variance of fare paid by Cherbourg's passenger is much higher too.
 ggplot(trainData, aes(x = Embarked, y = Fare)) + geom_boxplot()
-ddply(trainData, "Embarked", summarise, median=median(Fare, na.rm=T), sd=sd(Fare, na.rm=T))
+ddply(trainData, "Embarked", summarise, median = median(Fare, na.rm = TRUE),
+      sd = sd(Fare, na.rm = TRUE))
 
 
 ## VARIABLE 'TICKET'
 # maybe trivial, because the ticket number doesn't seem to be a relevant covariate, however
 # apparently there are tickets which have been issued for more than one person (group
-# tickets for families, maybe? please investigate)
+# tickets for families, maybe?)
 summary(Ticket)
-ggplot(trainData, aes(x = Ticket)) + geom_bar()
 hist(table(Ticket))
