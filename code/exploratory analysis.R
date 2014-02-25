@@ -8,7 +8,7 @@ options(digits=2)
 
 ##### LOAD AND CLEANING DATASET #####
 
-setwd("~/Dropbox/data analysis/titanic/")
+setwd("~/Dropbox/Data Analysis/titanic/")
 trainData <-read.csv("./data/train.csv")
 
 trainData <- transform(trainData,
@@ -150,7 +150,10 @@ hist(table(Ticket))
 
 ##### DATA MANIPULATION #####
 
-# extract FormOfAddress from Name
+# extract FormOfAddress from Name. This is particularly useful to get around the missing 
+# values in the Age variable. I can use the average age of the specific form of address to 
+# do a reasonable guess of the individual's age
+vec <- vector()
 for (i in 1 : nrow(trainData)) {
   if (grepl("Mr\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Mr"}
   else if (grepl("Miss\\.", trainData[i, "Name"]) == TRUE) {vec[i] <- "Miss"}
@@ -178,3 +181,9 @@ for (i in 1 : nrow(trainData)) {
 
 trainData <- as.data.frame(cbind(trainData, vec))
 names(trainData)[length(trainData)] <- "FormOfAddress"
+
+# calculate average age, sd, and number of observations per form
+age_addre <- ddply(trainData, c("FormOfAddress"), summarize, avg_age = mean(Age, na.rm=TRUE), 
+      sd_age = sd(Age, na.rm=TRUE), obs = length(FormOfAddress))
+
+# find a way to use those averages instead of NAs in Age

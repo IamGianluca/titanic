@@ -8,7 +8,7 @@ options(digits=2)
 
 ##### LOAD AND CLEANING DATASET #####
 
-setwd("~/Dropbox/data analysis/titanic/")
+setwd("~/Dropbox/Data Analysis/titanic/")
 trainData <-read.csv("./data/train.csv", stringsAsFactors = FALSE)
 
 trainData <- transform(trainData,
@@ -27,6 +27,7 @@ attach(trainData)
 
 
 ##### LOGISTIC REGRESSION #####
+
 # full model
 train.fit <- glm(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Area,
                  data = trainData, family = binomial() )
@@ -43,14 +44,10 @@ summary(train.fit.simpl)
 # four predictors fits as well as the full model with eight predictors
 anova(train.fit, train.fit.simpl, test = "Chisq")
 
-
-##### CROSS-VALIDATION #####
-
+# cross-validation
 predict.glm(train.fit.simpl, type = "response")
 
-
-##### PREDICTIONS #####
-
+# predictions on test set
 testData <- read.csv("./data/test.csv", stringsAsFactors = FALSE)
 
 testData <- transform(testData,
@@ -67,13 +64,16 @@ predictions <- predict.glm(train.fit.simpl, newdata = testData, type = "response
 
 results <- as.vector(NA)
 
+# randomly predict those observations where I don't have enough data (not really the best
+# way to run a prediction but I was in a rush to submit something on Kaggle). I must create
+# an substitute value for those observations coded as NAs to get around this issue.
 for (i in 1:length(predictions)) {
   results[i] <- ifelse(predictions[i] >= 0.5, 1, 0)
   if(is.na(predictions[i]) == TRUE) results[i] <- rbinom(n = 1, size = 1, prob = 0.5)
 }
 
 
-##### EXPORT RESULTS #####
+##### SUBMIT RESULTS TO KAGGLE #####
 
 kaggle.sub <- cbind(testData$PassengerId, results)
 colnames(kaggle.sub) <- c("PassengerId", "Survived")
