@@ -1,18 +1,20 @@
+rm(list = ls())
+
 ##### LOAD RELEVANT LIBRARIES #####
 
 library(dplyr)
 library(ggplot2)
-library(rpart)
-library(rattle)
-library(rpart.plot)
-library(RColorBrewer)
+#library(rpart)
+#library(rattle)
+#library(rpart.plot)
+#library(RColorBrewer)
 
 options(decimal = 2)
 
 
 ##### LOAD DATASET #####
 
-setwd("/home/gianluca/Dropbox/Data Analysis/titanic/")
+setwd("~/Dropbox/Data Analysis/kaggle/titanic")
 
 train <- read.csv("./data/train.csv")
 test <- read.csv("./data/test.csv")
@@ -52,7 +54,7 @@ for (i in 1:length(train$Fare2)) {
 # summarise survivor by Fare2, Pclass and Sex
 train %.% 
   group_by(Fare2, Pclass, Sex) %.%
-  summarise(Survived = sum(Survived) / n(Survived)) %.%
+  summarise(Survived = sum(Survived) / n()) %.%
   arrange(Fare2, Pclass, Sex)
 
 # predict all female survive except those with expensive tickets in 3rd class and submit 

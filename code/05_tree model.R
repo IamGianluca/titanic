@@ -1,3 +1,6 @@
+rm(list = ls())
+
+
 ##### LOAD RELEVANT LIBRARIES #####
 
 library(dplyr)
@@ -13,16 +16,14 @@ options(decimal = 2)
 
 ##### LOAD DATASET #####
 
-setwd("/home/gianluca/Dropbox/Data Analysis/titanic/")
-
-train <- read.csv("./data/train.csv")
-test <- read.csv("./data/test.csv")
+setwd("~/Dropbox/Data Analysis/kaggle/titanic")
+load("./data/tiny dataset.Rdata")
 
 
 ##### TREE MODEL #####
 
-fit <- rpart(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked, 
-             data = train, method = "class")
+fit <- rpart(Survived ~ Pclass + Sex + Age + Fare + factor(Embarked) + 
+               factor(Title) + Family, data = train, method = "class")
 
 fancyRpartPlot(fit)
 printcp(fit) # display cross-validation results
@@ -63,4 +64,4 @@ for (i in 1:nrow(test)) {
 ##### SUBMIT RESULTS TO KAGGLE #####
 
 submit <- data.frame(PassengerId = test$PassengerId, Survived = test$Survived)
-write.csv(submit, file = "prunedtree_submit.csv", row.names = FALSE)
+write.csv(submit, file = "prunedtree_submission.csv", row.names = FALSE)
